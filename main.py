@@ -44,7 +44,7 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                 try:
                     tmpfilename = os.path.basename(att)
                     filename = f"{target_dir}{os.path.sep}{ts.strftime('%Y%m%d-%H%M%S')}-{src}{msg}-{tmpfilename}"
-                    shutil.copy(att, filename)
+                    shutil.copyfile(att, filename)
                     logging.debug(f"saved attachment to {filename}")
                 except Exception as ex:
                     logging.error(f"error copying attachment {att}: {ex}")
