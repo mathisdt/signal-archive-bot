@@ -30,7 +30,8 @@ signal = bus.get('org.asamk.Signal', object_path=f'/org/asamk/Signal/_{config["s
 
 def check_and_possibly_archive_media(timestamp, source, group_id, message, attachments):
     if timestamp and group_id and attachments:
-        errored = False
+        exception = None
+        group_name = None
         try:
             logging.debug(f"received message with {len(attachments)} attachments: {message}")
             ts = datetime.datetime.fromtimestamp(timestamp // 1000, tz=zoneinfo.ZoneInfo("Europe/Berlin"))
@@ -40,7 +41,14 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                 msg = f"-{msg}"
             src = re.sub(r"^\+?49", "0", source)
             src = re.sub(r"[^a-zA-Z0-9]", "", src)
+            group_name = signal.getGroupName(group_id)
+            if group_name is not None and len(group_name) > 0:
+                src = f"{re.sub(r'[^-_.,a-zA-ZäöüÄÖÜß0-9]', '_', group_name)}-{src}"
+            src_name = signal.getContactName(source)
+            if src_name is not None and len(src_name) > 0:
+                src = f"{src}_{re.sub(r'[^-_.,a-zA-ZäöüÄÖÜß0-9]', '_', src_name)}"
             for att in attachments:
+                filename = None
                 try:
                     tmpfilename = os.path.basename(att)
                     filename = f"{target_dir}{os.path.sep}{ts.strftime('%Y%m%d-%H%M%S')}-{src}{msg}-{tmpfilename}"
@@ -48,17 +56,26 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                     logging.debug(f"saved attachment to {filename}")
                 except Exception as ex:
                     logging.error(f"error copying attachment {att}: {ex}")
-                    errored = True
+                    ex.add_note(f"while copying attachment {att} to {filename}")
+                    exception = ex
         except Exception as ex:
             logging.error(f"error: {ex}")
-            errored = True
+            exception = ex
         finally:
-            if not errored:
+            if not exception:
                 # green check mark
                 signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id)
+                if "logging" in config and "success_number" in config["logging"]:
+                    signal.sendMessage(
+                        f"successfully archived a message from {group_name} with {len(attachments)} file(s)",
+                        [], ["+" + config["logging"]["success_number"]])
             else:
                 # red cross mark
                 signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id)
+                if "logging" in config and "error_number" in config["logging"]:
+                    signal.sendMessage(
+                        f"could not archive a message from {group_name} with {len(attachments)} file(s): {exception}",
+                        [], ["+" + config["logging"]["error_number"]])
 
 
 target_dir = config["local"]["target_dir"]
