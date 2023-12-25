@@ -20,7 +20,7 @@ if not os.path.isfile("config.ini"):
 
 config = configparser.ConfigParser()
 config.read("config.ini")
-logging.debug("configuration read")
+logging.debug("read configuration")
 
 bus = SystemBus()
 loop = GLib.MainLoop()
@@ -29,7 +29,7 @@ signal = bus.get('org.asamk.Signal', object_path=f'/org/asamk/Signal/_{config["s
 
 
 def check_and_possibly_archive_media(timestamp, source, group_id, message, attachments):
-    if timestamp and group_id and attachments:
+    if timestamp and attachments:
         exception = None
         group_name = None
         try:
@@ -41,9 +41,10 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                 msg = f"-{msg}"
             src = re.sub(r"^\+?49", "0", source)
             src = re.sub(r"[^a-zA-Z0-9]", "", src)
-            group_name = signal.getGroupName(group_id)
-            if group_name is not None and len(group_name) > 0:
-                src = f"{re.sub(r'[^-_.,a-zA-ZäöüÄÖÜß0-9]', '_', group_name)}-{src}"
+            if group_id:
+                group_name = signal.getGroupName(group_id)
+                if group_name is not None and len(group_name) > 0:
+                    src = f"{re.sub(r'[^-_.,a-zA-ZäöüÄÖÜß0-9]', '_', group_name)}-{src}"
             src_name = signal.getContactName(source)
             if src_name is not None and len(src_name) > 0:
                 src = f"{src}_{re.sub(r'[^-_.,a-zA-ZäöüÄÖÜß0-9]', '_', src_name)}"
@@ -65,23 +66,35 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
             if not exception:
                 if ("success_reaction" not in config["signal"] or config["signal"]["success_reaction"] in
                         ("true", "True", "TRUE", "1")):
-                    # green check mark
-                    signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id)
+                    # 2705 = green check mark
+                    if group_id:
+                        signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id)
+                        logging.debug('sent success group reaction')
+                    else:
+                        signal.sendMessageReaction("\u2705", False, source, timestamp, source)
+                        logging.debug('sent success reaction')
                 if ("logging" in config and "success_number" in config["logging"]
                         and len(config["logging"]["success_number"]) > 0):
                     signal.sendMessage(
                         f"successfully archived a message from {group_name} with {len(attachments)} file(s)",
                         [], ["+" + config["logging"]["success_number"]])
+                    logging.debug(f'sent success message to {config["logging"]["success_number"]}')
             else:
                 if ("error_reaction" not in config["signal"] or config["signal"]["error_reaction"] in
                         ("true", "True", "TRUE", "1")):
-                    # red cross mark
-                    signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id)
+                    # 274C = red cross mark
+                    if group_id:
+                        signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id)
+                        logging.debug('sent error group reaction')
+                    else:
+                        signal.sendMessageReaction("\u274C", False, source, timestamp, source)
+                        logging.debug('sent error reaction')
                 if ("logging" in config and "error_number" in config["logging"]
                         and len(config["logging"]["error_number"]) > 0):
                     signal.sendMessage(
                         f"could not archive a message from {group_name} with {len(attachments)} file(s): {exception}",
                         [], ["+" + config["logging"]["error_number"]])
+                    logging.debug(f'sent error message to {config["logging"]["error_number"]}')
 
 
 target_dir = config["local"]["target_dir"]
