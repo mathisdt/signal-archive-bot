@@ -1,0 +1,15 @@
+[Unit]
+Description=Archive Bot for Signal
+Requires=signal-cli.service
+After=signal-cli.service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/signal-archive-bot
+ExecStart=./run.sh
+User=signaluser
+
+[Install]
+WantedBy=multi-user.target
