@@ -63,7 +63,8 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
             exception = ex
         finally:
             if not exception:
-                if "success_reaction" not in config["signal"] or config["signal"]["success_reaction"]:
+                if ("success_reaction" not in config["signal"] or config["signal"]["success_reaction"] in
+                        ("true", "True", "TRUE", "1")):
                     # green check mark
                     signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id)
                 if ("logging" in config and "success_number" in config["logging"]
@@ -72,7 +73,8 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                         f"successfully archived a message from {group_name} with {len(attachments)} file(s)",
                         [], ["+" + config["logging"]["success_number"]])
             else:
-                if "error_reaction" not in config["signal"] or config["signal"]["error_reaction"]:
+                if ("error_reaction" not in config["signal"] or config["signal"]["error_reaction"] in
+                        ("true", "True", "TRUE", "1")):
                     # red cross mark
                     signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id)
                 if ("logging" in config and "error_number" in config["logging"]
