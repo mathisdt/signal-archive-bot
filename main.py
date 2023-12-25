@@ -13,14 +13,15 @@ from pydbus import SystemBus
 
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
-if not os.path.isfile("config.ini"):
-    logging.error(
-        "config.ini not found - maybe you didn't copy (and customize) the file config-template.ini to config.ini yet?")
+configfile = f"{os.path.realpath(os.path.dirname(__file__))}/config.ini"
+if not os.path.isfile(configfile):
+    logging.log(logging.ERROR,
+                f"{configfile} not found - maybe you didn't copy (and customize)"
+                f" the file config-template.ini to config.ini yet?")
     exit(1)
-
 config = configparser.ConfigParser()
-config.read("config.ini")
-logging.debug("read configuration")
+config.read(configfile)
+logging.debug(f"read configuration from {configfile}")
 
 bus = SystemBus()
 loop = GLib.MainLoop()
