@@ -78,7 +78,7 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                         and len(config["logging"]["success_number"]) > 0):
                     signal.sendMessage(
                         f"successfully archived a message from {group_name} with {len(attachments)} file(s)",
-                        [], ["+" + config["logging"]["success_number"]])
+                        [], ["+" + config["logging"]["success_number"]], signature="sasas")
                     logging.debug(f'sent success message to {config["logging"]["success_number"]}')
             else:
                 if ("error_reaction" not in config["signal"] or config["signal"]["error_reaction"] in
@@ -94,7 +94,7 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                         and len(config["logging"]["error_number"]) > 0):
                     signal.sendMessage(
                         f"could not archive a message from {group_name} with {len(attachments)} file(s): {exception}",
-                        [], ["+" + config["logging"]["error_number"]])
+                        [], ["+" + config["logging"]["error_number"]], signature="sasas")
                     logging.debug(f'sent error message to {config["logging"]["error_number"]}')
 
 
