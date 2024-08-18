@@ -39,7 +39,7 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
             msg = ""
             if message is not None and len(message) > 0:
                 msg = message if len(message) <= 15 else message[:15]
-                msg = f"-{msg}"
+                msg = f"-{re.sub(r'[^- _.,a-zA-ZäöüÄÖÜß0-9]', '_', msg)}"
             src = re.sub(r"^\+?49", "0", source)
             src = re.sub(r"[^a-zA-Z0-9]", "", src)
             if group_id:
