@@ -70,10 +70,16 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                             ("true", "True", "TRUE", "1")):
                         # 2705 = green check mark
                         if group_id:
-                            signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id, signature="sbsxay")
+                            try:
+                                signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id)
+                            except:
+                                signal.sendGroupMessageReaction("\u2705", False, source, timestamp, [group_id])
                             logging.debug(f'sent success reaction to group {group_id}')
                         else:
-                            signal.sendMessageReaction("\u2705", False, source, timestamp, [source], signature="sbsxas")
+                            try:
+                                signal.sendMessageReaction("\u2705", False, source, timestamp, [source])
+                            except:
+                                signal.sendMessageReaction("\u2705", False, source, timestamp, source)
                             logging.debug(f'sent success reaction to {source}')
                     if ("logging" in config and "success_number" in config["logging"]
                             and len(config["logging"]["success_number"]) > 0):
@@ -86,10 +92,16 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
                             ("true", "True", "TRUE", "1")):
                         # 274C = red cross mark
                         if group_id:
-                            signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id, signature="sbsxay")
+                            try:
+                                signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id)
+                            except:
+                                signal.sendGroupMessageReaction("\u274C", False, source, timestamp, [group_id])
                             logging.debug(f'sent error reaction to group {group_id}')
                         else:
-                            signal.sendMessageReaction("\u274C", False, source, timestamp, [source], signature="sbsxas")
+                            try:
+                                signal.sendMessageReaction("\u274C", False, source, timestamp, [source])
+                            except:
+                                signal.sendMessageReaction("\u274C", False, source, timestamp, source)
                             logging.debug(f'sent error reaction to {source}')
                     if ("logging" in config and "error_number" in config["logging"]
                             and len(config["logging"]["error_number"]) > 0):
