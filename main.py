@@ -64,38 +64,41 @@ def check_and_possibly_archive_media(timestamp, source, group_id, message, attac
             logging.error(f"error: {ex}")
             exception = ex
         finally:
-            if not exception:
-                if ("success_reaction" not in config["signal"] or config["signal"]["success_reaction"] in
-                        ("true", "True", "TRUE", "1")):
-                    # 2705 = green check mark
-                    if group_id:
-                        signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id)
-                        logging.debug(f'sent success reaction to group {group_id}')
-                    else:
-                        signal.sendMessageReaction("\u2705", False, source, timestamp, [source])
-                        logging.debug(f'sent success reaction to {source}')
-                if ("logging" in config and "success_number" in config["logging"]
-                        and len(config["logging"]["success_number"]) > 0):
-                    signal.sendMessage(
-                        f"successfully archived a message from {group_name} with {len(attachments)} file(s)",
-                        [], ["+" + config["logging"]["success_number"]], signature="sasas")
-                    logging.debug(f'sent success message to {config["logging"]["success_number"]}')
-            else:
-                if ("error_reaction" not in config["signal"] or config["signal"]["error_reaction"] in
-                        ("true", "True", "TRUE", "1")):
-                    # 274C = red cross mark
-                    if group_id:
-                        signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id)
-                        logging.debug(f'sent error reaction to group {group_id}')
-                    else:
-                        signal.sendMessageReaction("\u274C", False, source, timestamp, [source])
-                        logging.debug(f'sent error reaction to {source}')
-                if ("logging" in config and "error_number" in config["logging"]
-                        and len(config["logging"]["error_number"]) > 0):
-                    signal.sendMessage(
-                        f"could not archive a message from {group_name} with {len(attachments)} file(s): {exception}",
-                        [], ["+" + config["logging"]["error_number"]], signature="sasas")
-                    logging.debug(f'sent error message to {config["logging"]["error_number"]}')
+            try:
+                if not exception:
+                    if ("success_reaction" not in config["signal"] or config["signal"]["success_reaction"] in
+                            ("true", "True", "TRUE", "1")):
+                        # 2705 = green check mark
+                        if group_id:
+                            signal.sendGroupMessageReaction("\u2705", False, source, timestamp, group_id, signature="sbsxay")
+                            logging.debug(f'sent success reaction to group {group_id}')
+                        else:
+                            signal.sendMessageReaction("\u2705", False, source, timestamp, [source], signature="sbsxas")
+                            logging.debug(f'sent success reaction to {source}')
+                    if ("logging" in config and "success_number" in config["logging"]
+                            and len(config["logging"]["success_number"]) > 0):
+                        signal.sendMessage(
+                            f"successfully archived a message from {group_name} with {len(attachments)} file(s)",
+                            [], ["+" + config["logging"]["success_number"]], signature="sasas")
+                        logging.debug(f'sent success message to {config["logging"]["success_number"]}')
+                else:
+                    if ("error_reaction" not in config["signal"] or config["signal"]["error_reaction"] in
+                            ("true", "True", "TRUE", "1")):
+                        # 274C = red cross mark
+                        if group_id:
+                            signal.sendGroupMessageReaction("\u274C", False, source, timestamp, group_id, signature="sbsxay")
+                            logging.debug(f'sent error reaction to group {group_id}')
+                        else:
+                            signal.sendMessageReaction("\u274C", False, source, timestamp, [source], signature="sbsxas")
+                            logging.debug(f'sent error reaction to {source}')
+                    if ("logging" in config and "error_number" in config["logging"]
+                            and len(config["logging"]["error_number"]) > 0):
+                        signal.sendMessage(
+                            f"could not archive a message from {group_name} with {len(attachments)} file(s): {exception}",
+                            [], ["+" + config["logging"]["error_number"]], signature="sasas")
+                        logging.debug(f'sent error message to {config["logging"]["error_number"]}')
+            except Exception as ex:
+                logging.error(f"error when signaling outcome (success or error) after archiving attachments: {ex}")
 
 
 target_dir = config["local"]["target_dir"]
